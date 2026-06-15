@@ -5,8 +5,23 @@ const app = express();
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Hello from Kubernetes 🚀",
-    hostname: os.hostname()
+    message: "Hello from Kubernetes V2 🚀",
+    hostname: os.hostname(),
+    version: "v2"
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({
+    status: "UP"
+  });
+});
+
+app.get("/api/info", (req, res) => {
+  res.json({
+    hostname: os.hostname(),
+    version: "v2",
+    timestamp: new Date().toISOString()
   });
 });
 
