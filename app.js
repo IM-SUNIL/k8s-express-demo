@@ -17,9 +17,9 @@ const pool = new Pool({
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Hello from Kubernetes V2 🚀",
+    message: "Hello from Kubernetes V5 🚀",
     hostname: os.hostname(),
-    version: "v2"
+    version: "v5"
   });
 });
 
