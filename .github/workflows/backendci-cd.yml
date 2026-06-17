@@ -1,0 +1,50 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build -t k8s-express-demo:${{ github.sha }} .
+
+      - name: Tag Image
+        run: |
+          docker tag k8s-express-demo:${{ github.sha }} \
+          323206974001.dkr.ecr.ap-south-1.amazonaws.com/k8s-express-demo:${{ github.sha }}
+
+      - name: Push Image
+        run: |
+          docker push 323206974001.dkr.ecr.ap-south-1.amazonaws.com/k8s-express-demo:${{ github.sha }}
+
+      - name: Deploy to Kubernetes
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo kubectl set image deployment/express-deployment \
+            express-container=323206974001.dkr.ecr.ap-south-1.amazonaws.com/k8s-express-demo:${{ github.sha }}
+
+            sudo kubectl rollout status deployment/express-deployment
