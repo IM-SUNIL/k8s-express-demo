@@ -1,9 +1,11 @@
 const express = require("express");
 const os = require("os");
 const { Pool } = require("pg");
+const cors = require("cors");
 
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 const pool = new Pool({
   host: "postgres-service",
